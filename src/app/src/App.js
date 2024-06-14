@@ -294,7 +294,7 @@ function App() {
                           </Typography>
                         ) : (
                           <Typography style={{ color: "green" }}>
-                            {todo.title}
+                            ToDo : {todo.title}
                           </Typography>
                         )}
                         <br />
@@ -404,7 +404,7 @@ function App() {
                           </Typography>
                         ) : (
                           <Typography style={{ color: "green" }}>
-                            {todo.title}
+                            ToDo : {todo.title}
                           </Typography>
                         )}
                         <br />
@@ -507,7 +507,7 @@ function App() {
                         </Typography>
                       ) : (
                         <Typography style={{ color: "green" }}>
-                          {todo.title}
+                          ToDo : {todo.title}
                         </Typography>
                       )}
                       <br />
