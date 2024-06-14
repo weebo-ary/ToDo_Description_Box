@@ -42,3 +42,14 @@ class TodoListView(APIView):
             return JsonResponse({"message": "Todo status toggled successfully"}, status=status.HTTP_200_OK)
         else:
             return JsonResponse({"error": "Todo not found"}, status=status.HTTP_404_NOT_FOUND)
+    def delete(self, request, todo_id):
+        # Retrieve the todo item from the MongoDB collection
+        todo = db.todos.find_one({"_id": ObjectId(todo_id)})
+
+        # Check if the todo item exists
+        if todo:
+            # Delete the todo item from the MongoDB collection
+            db.todos.delete_one({"_id": ObjectId(todo_id)})
+            return JsonResponse({"message": "Todo deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return JsonResponse({"error": "Todo not found"}, status=status.HTTP_404_NOT_FOUND)    

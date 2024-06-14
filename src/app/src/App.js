@@ -6,42 +6,17 @@ import {
   Button,
   Divider,
   Card,
-  CardHeader,
-  CardContent,
   Typography,
   Badge,
 } from "@mui/material";
-import PropTypes from "prop-types";
+import TabPanel from "./components/Tabs";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import DoDisturbOnOutlinedIcon from "@mui/icons-material/DoDisturbOnOutlined";
-
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`vertical-tabpanel-${index}`}
-      aria-labelledby={`vertical-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.number.isRequired,
-  value: PropTypes.number.isRequired,
-};
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function a11yProps(index) {
   return {
@@ -70,10 +45,10 @@ function App() {
         const data = await response.json();
         setTodos(data.todos);
       } else {
-        console.error("Failed to fetch todos:", response.statusText);
+        toast.error("Failed to fetch todos:", response.statusText);
       }
     } catch (error) {
-      console.error("Error fetching todos:", error);
+      toast.error("Error fetching todos:", error);
     }
   };
 
@@ -98,16 +73,18 @@ function App() {
       if (response.ok) {
         setNewTodo({ title: "", description: "", completed: false });
         fetchTodos();
+        toast.success("Task Added Successfully!");
       } else {
-        console.error("Failed to add todo:", response.statusText);
+        toast.error("Failed to add todo:", response.statusText);
       }
     } catch (error) {
-      console.error("Error adding todo:", error);
+      toast.error("Error adding todo:", error);
     }
   };
 
   const handleToggle = async (id) => {
     try {
+      const isCompleted = todos.find((todo) => todo._id === id).completed;
       const response = await fetch(`http://localhost:8000/todos/${id}/`, {
         method: "PATCH",
         headers: {
@@ -119,11 +96,35 @@ function App() {
       });
       if (response.ok) {
         fetchTodos();
+        if (isCompleted) {
+          toast.warn("Task Restored Successfully!");
+        } else {
+          toast.success("Task Completed Successfully!");
+        }
       } else {
-        console.error("Failed to toggle todo:", response.statusText);
+        toast.error("Failed to toggle todo:", response.statusText);
       }
     } catch (error) {
-      console.error("Error toggling todo:", error);
+      toast.error("Error toggling todo:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8000/todos/${id}/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.ok) {
+        fetchTodos();
+        toast.warn("Task Deleted Successfully!");
+      } else {
+        toast.error("Failed to delete todo:", response.statusText);
+      }
+    } catch (error) {
+      toast.error("Error deleting todo:", error);
     }
   };
 
@@ -131,11 +132,21 @@ function App() {
     setValueTab(newValue);
   };
 
-  const completedTrueLength = todos.filter(todo => todo.completed).length;
-  const completedFalseLength = todos.filter(todo => !todo.completed).length;
+  const completedTrueLength = todos.filter((todo) => todo.completed).length;
+  const completedFalseLength = todos.filter((todo) => !todo.completed).length;
 
   return (
     <Box className="App">
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+        progress={undefined}
+        theme="light"
+      />
       <Box>
         <h1>Create a ToDo</h1>
         <Box
@@ -212,8 +223,22 @@ function App() {
               width: "15%",
             }}
           >
-           <Tab label={<Badge badgeContent={completedFalseLength} color="error"><Typography marginRight={'20px'}>Pending</Typography></Badge>} {...a11yProps(0)} />
-           <Tab label={<Badge badgeContent={completedTrueLength} color="success"><Typography marginRight={'20px'}>Completed</Typography></Badge>} {...a11yProps(1)} />
+            <Tab
+              label={
+                <Badge badgeContent={completedFalseLength} color="error">
+                  <Typography marginRight={"20px"}>Pending</Typography>
+                </Badge>
+              }
+              {...a11yProps(0)}
+            />
+            <Tab
+              label={
+                <Badge badgeContent={completedTrueLength} color="success">
+                  <Typography marginRight={"20px"}>Completed</Typography>
+                </Badge>
+              }
+              {...a11yProps(1)}
+            />
           </Tabs>
           <TabPanel value={valueTab} index={0}>
             <Box
@@ -260,7 +285,12 @@ function App() {
                         </Typography>
                         <br />
                         {todo.completed === false ? (
-                          <Box display={'flex'} alignItems={'center'} justifyContent={'center'} gap={'1rem'}>
+                          <Box
+                            display={"flex"}
+                            alignItems={"center"}
+                            justifyContent={"center"}
+                            gap={"1rem"}
+                          >
                             <Button
                               type="toggle"
                               onClick={() => handleToggle(todo._id)}
@@ -278,6 +308,14 @@ function App() {
                                 <DoDisturbOnOutlinedIcon />{" "}
                               </Typography>
                             </Button>
+                            <Button
+                              type="toggle"
+                              onClick={() => handleDelete(todo._id)}
+                            >
+                              <Typography color={"red"}>
+                                <DeleteOutlinedIcon />{" "}
+                              </Typography>
+                            </Button>
                           </Box>
                         ) : (
                           <>
@@ -287,6 +325,14 @@ function App() {
                             >
                               <Typography color={"red"}>
                                 <DoDisturbOnOutlinedIcon />{" "}
+                              </Typography>
+                            </Button>
+                            <Button
+                              type="toggle"
+                              onClick={() => handleDelete(todo._id)}
+                            >
+                              <Typography color={"red"}>
+                                <DeleteOutlinedIcon />{" "}
                               </Typography>
                             </Button>
                           </>
@@ -349,7 +395,12 @@ function App() {
                           </Button>
                         </>
                       ) : (
-                        <Box display={'flex'} alignItems={'center'} justifyContent={'center'} gap={'1rem'}>
+                        <Box
+                          display={"flex"}
+                          alignItems={"center"}
+                          justifyContent={"center"}
+                          gap={"1rem"}
+                        >
                           <Button
                             type="toggle"
                             onClick={() => handleToggle(todo._id)}
@@ -358,12 +409,20 @@ function App() {
                               <DoDisturbOnOutlinedIcon />{" "}
                             </Typography>
                           </Button>
-                        <Button
+                          <Button
                             type="toggle"
                             onClick={() => handleToggle(todo._id)}
                             disabled
                           >
                             <CheckOutlinedIcon />
+                          </Button>
+                          <Button
+                            type="toggle"
+                            onClick={() => handleDelete(todo._id)}
+                          >
+                            <Typography color={"red"}>
+                              <DeleteOutlinedIcon />{" "}
+                            </Typography>
                           </Button>
                         </Box>
                       )}
