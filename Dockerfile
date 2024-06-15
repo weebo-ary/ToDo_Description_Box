@@ -30,10 +30,11 @@ RUN apt-get update && \
 # Verify installation
 RUN pip3 --version
 
-
+#Environment Variables
 ENV ENV_TYPE staging
 ENV MONGO_HOST mongo
 ENV MONGO_PORT 27017
+ENV DJANGO_SECRET_KEY="00000000000000000000000000000000000000000000000000"
 ##########
 
 ENV PYTHONPATH=src/
