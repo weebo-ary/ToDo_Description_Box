@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, TextField, Button, Typography, Divider } from "@mui/material";
+import { Box, TextField, Button, Typography} from "@mui/material";
 import { toast } from "react-toastify";
 import { createTodo } from "../api/api";
 

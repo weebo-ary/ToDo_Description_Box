@@ -59,7 +59,6 @@ export const toggleTodo = async (id, completed) => {
       });
       if (response.ok) {
         fetchTodos();
-        console.warn("Task Deleted Successfully!");
       } else {
         console.error("Failed to delete todo:", response.statusText);
       }
